@@ -1,0 +1,21 @@
+From: Kill Your TV <killyourtv@i2pmail.org>
+Date: Mon, 29 Sep 2014 20:47:50 +0000
+Subject: desktop-file-fix
+
+---
+ src/Sigil/Resource_Files/freedesktop/sigil.desktop | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Sigil/Resource_Files/freedesktop/sigil.desktop b/src/Sigil/Resource_Files/freedesktop/sigil.desktop
+index da453cc..8da3dfb 100644
+--- a/src/Sigil/Resource_Files/freedesktop/sigil.desktop
++++ b/src/Sigil/Resource_Files/freedesktop/sigil.desktop
+@@ -2,7 +2,7 @@
+ Type=Application
+ Name=Sigil
+ Comment=ePUB file editor
+-Exec=sigil
++Exec=sigil %U
+ Icon=sigil
+ Categories=Office;FileTools;Qt;Viewer;TextTools;TextEditor;Utility;
+ Keywords=epub;Book;
