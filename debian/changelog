@@ -1,3 +1,9 @@
+sigil (0.8.0-1ubuntu3) trusty; urgency=medium
+
+  * Really remove the build-dep.
+
+ -- Kill Your TV <killyourtv@i2pmail.org>  Tue, 30 Sep 2014 00:31:51 +0000
+
 sigil (0.8.0-1ubuntu2) trusty; urgency=medium
 
   * Remove build-dep on libminizip-dev as it's not in Ubuntu before Utopic
