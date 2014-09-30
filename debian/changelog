@@ -1,3 +1,9 @@
+sigil (0.8.0-1ubuntu2) trusty; urgency=medium
+
+  * Remove build-dep on libminizip-dev as it's not in Ubuntu before Utopic
+
+ -- Kill Your TV <killyourtv@i2pmail.org>  Tue, 30 Sep 2014 00:26:49 +0000
+
 sigil (0.8.0-1ubuntu1) trusty; urgency=medium
 
   * Upload to PPA
