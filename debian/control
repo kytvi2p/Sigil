@@ -3,7 +3,7 @@ Section: doc
 Priority: optional
 Maintainer: Kill Your TV <killyourtv@i2pmail.org>
 Build-Depends: debhelper (>= 9),
- cmake,
+ cmake (>= 3.0.2),
  qtbase5-dev,
  qttools5-dev-tools,
  libhunspell-dev,
@@ -12,7 +12,7 @@ Build-Depends: debhelper (>= 9),
  libqt5xmlpatterns5-dev,
  qtdeclarative5-dev,
  qttools5-dev
-Standards-Version: 3.9.5
+Standards-Version: 3.9.6
 Homepage: https://github.com/user-none/Sigil
 Vcs-Git: git://killyourtv.i2p/Sigil.git
 Vcs-Browser: http://killyourtv.i2p/gitweb/?p=Sigil.git

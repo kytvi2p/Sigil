@@ -32,7 +32,7 @@
 
 const int MAX_WORD_LENGTH  = 90;
 
-QList< HTMLSpellCheck::MisspelledWord > HTMLSpellCheck::GetMisspelledWords(const QString &orig_text,
+QList<HTMLSpellCheck::MisspelledWord> HTMLSpellCheck::GetMisspelledWords(const QString &orig_text,
         int start_offset,
         int end_offset,
         const QString &search_regex,
@@ -40,12 +40,13 @@ QList< HTMLSpellCheck::MisspelledWord > HTMLSpellCheck::GetMisspelledWords(const
         bool include_all_words)
 {
     SpellCheck *sc = SpellCheck::instance();
+    QString wordChars = sc->getWordChars();
     bool in_tag = false;
     bool in_invalid_word = false;
     bool in_entity = false;
     int word_start = 0;
     QRegularExpression search(search_regex);
-    QList< HTMLSpellCheck::MisspelledWord > misspellings;
+    QList<HTMLSpellCheck::MisspelledWord> misspellings;
     // Make sure text has beginning/end boundary markers for easier parsing
     QString text = QChar(' ') + orig_text + QChar(' ');
     // Ignore <style...</style> wherever it appears - change to spaces to keep text positions
@@ -66,7 +67,7 @@ QList< HTMLSpellCheck::MisspelledWord > HTMLSpellCheck::GetMisspelledWords(const
             QChar prev_c = i > 0 ? text.at(i - 1) : QChar(' ');
             QChar next_c = i < text.count() - 1 ? text.at(i + 1) : QChar(' ');
 
-            if (IsBoundary(prev_c, c, next_c)) {
+            if (IsBoundary(prev_c, c, next_c, wordChars)) {
                 // If we're in an entity and we hit a boundary and it isn't
                 // part of an entity then this is an invalid entity.
                 if (in_entity && c != QChar(';')) {
@@ -137,7 +138,7 @@ QList< HTMLSpellCheck::MisspelledWord > HTMLSpellCheck::GetMisspelledWords(const
     return misspellings;
 }
 
-bool HTMLSpellCheck::IsBoundary(QChar prev_c, QChar c, QChar next_c)
+bool HTMLSpellCheck::IsBoundary(QChar prev_c, QChar c, QChar next_c, const QString & wordChars)
 {
     if (c.isLetter()) {
         return false;
@@ -146,7 +147,11 @@ bool HTMLSpellCheck::IsBoundary(QChar prev_c, QChar c, QChar next_c)
     // Single quotes of ' and curly version and hyphen/emdash are sometimes a boundary
     // and sometimes not, depending on whether they are surrounded by letters or not.
     // A sentence which 'has some text' should treat the ' as a boundary but didn't should not.
-    bool is_potential_boundary = (c == '-' || c == QChar(0x2012) || c == '\'' || c == QChar(0x2019));
+    bool is_potential_boundary = (c == '-' || 
+                                  c == QChar(0x2012) || 
+                                  c == '\'' || 
+                                  c == QChar(0x2019) ||
+                                  (!wordChars.isEmpty() && wordChars.contains(c)));
 
     if (is_potential_boundary && (!prev_c.isLetter() || !next_c.isLetter())) {
         return true;
@@ -156,12 +161,12 @@ bool HTMLSpellCheck::IsBoundary(QChar prev_c, QChar c, QChar next_c)
 }
 
 
-QList< HTMLSpellCheck::MisspelledWord > HTMLSpellCheck::GetMisspelledWords(const QString &text)
+QList<HTMLSpellCheck::MisspelledWord> HTMLSpellCheck::GetMisspelledWords(const QString &text)
 {
     return GetMisspelledWords(text, 0, text.count(), "");
 }
 
-QList< HTMLSpellCheck::MisspelledWord > HTMLSpellCheck::GetWords(const QString &text)
+QList<HTMLSpellCheck::MisspelledWord> HTMLSpellCheck::GetWords(const QString &text)
 {
     return GetMisspelledWords(text, 0, text.count(), "", false, true);
 }
@@ -171,7 +176,7 @@ HTMLSpellCheck::MisspelledWord HTMLSpellCheck::GetFirstMisspelledWord(const QStr
         int end_offset,
         const QString &search_regex)
 {
-    QList< HTMLSpellCheck::MisspelledWord > misspelled_words = GetMisspelledWords(text, start_offset, end_offset, search_regex, true);
+    QList<HTMLSpellCheck::MisspelledWord> misspelled_words = GetMisspelledWords(text, start_offset, end_offset, search_regex, true);
     HTMLSpellCheck::MisspelledWord misspelled_word;
 
     if (!misspelled_words.isEmpty()) {
@@ -187,7 +192,7 @@ HTMLSpellCheck::MisspelledWord HTMLSpellCheck::GetLastMisspelledWord(const QStri
         int end_offset,
         const QString &search_regex)
 {
-    QList< HTMLSpellCheck::MisspelledWord > misspelled_words = GetMisspelledWords(text, start_offset, end_offset, search_regex);
+    QList<HTMLSpellCheck::MisspelledWord> misspelled_words = GetMisspelledWords(text, start_offset, end_offset, search_regex);
     HTMLSpellCheck::MisspelledWord misspelled_word;
 
     if (!misspelled_words.isEmpty()) {
@@ -222,7 +227,7 @@ int HTMLSpellCheck::CountAllWords(const QString &text)
 
 QStringList HTMLSpellCheck::GetAllWords(const QString &text)
 {
-    QList< HTMLSpellCheck::MisspelledWord > words = GetMisspelledWords(text, 0, text.count(), "", false, true);
+    QList<HTMLSpellCheck::MisspelledWord> words = GetMisspelledWords(text, 0, text.count(), "", false, true);
     QStringList all_words_text;
     foreach(HTMLSpellCheck::MisspelledWord word, words) {
         all_words_text.append(word.text);
@@ -232,7 +237,7 @@ QStringList HTMLSpellCheck::GetAllWords(const QString &text)
 
 int HTMLSpellCheck::WordPosition(QString text, QString word, int start_pos)
 {
-    QList< HTMLSpellCheck::MisspelledWord > words = GetWords(text);
+    QList<HTMLSpellCheck::MisspelledWord> words = GetWords(text);
 
     foreach (HTMLSpellCheck::MisspelledWord w, words) {
         if (w.offset < start_pos) {

@@ -99,7 +99,7 @@ public:
      * @param parent The window's parent object.
      * @param flags The flags used to modify window behavior.
      */
-    MainWindow(const QString &openfilepath = QString(), QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    MainWindow(const QString &openfilepath = QString(), bool is_internal = false, QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~MainWindow();
 
     /**
@@ -107,7 +107,7 @@ public:
      *
      * @return A shared pointer to the book.
      */
-    QSharedPointer< Book > GetCurrentBook();
+    QSharedPointer<Book> GetCurrentBook();
 
 
     /**
@@ -115,7 +115,7 @@ public:
      *
      * @return A pointer to the BookBrowser
      */
-    BookBrowser * GetBookBrowser();
+    BookBrowser *GetBookBrowser();
 
 
     /**
@@ -187,15 +187,14 @@ public:
      *
      * @return The load dialog filters.
      */
-    static const QMap< QString, QString > GetLoadFiltersMap();
-    
+    static const QMap<QString, QString> GetLoadFiltersMap();
+
     /**
      * Loads a book from the file specified.
      *
      * @param fullfilepath The path to the file to load.
      */
-    void LoadFile(const QString &fullfilepath);
-
+    bool LoadFile(const QString &fullfilepath, bool is_internal = false);
 
 
 public slots:
@@ -215,17 +214,17 @@ public slots:
                       bool precede_current_tab = false);
 
     void OpenResourceAndWaitUntilLoaded(Resource &resource,
-                      int line_to_scroll_to = -1,
-                      int position_to_scroll_to = -1,
-                      const QString &caret_location_to_scroll_to = QString(),
-                      MainWindow::ViewState view_state = MainWindow::ViewState_Unknown,
-                      const QUrl &fragment = QUrl(),
-                      bool precede_current_tab = false);
+                                        int line_to_scroll_to = -1,
+                                        int position_to_scroll_to = -1,
+                                        const QString &caret_location_to_scroll_to = QString(),
+                                        MainWindow::ViewState view_state = MainWindow::ViewState_Unknown,
+                                        const QUrl &fragment = QUrl(),
+                                        bool precede_current_tab = false);
 
     void CreateIndex();
 
     void runPlugin(QAction *action);
-    
+
     void ResourcesAddedOrDeleted();
 
 
@@ -414,11 +413,6 @@ private slots:
     void Donate();
 
     /**
-     * Implements Report An Issue action functionality.
-     */
-    void ReportAnIssue();
-
-    /**
      * Implements Sigil Dev Blog action functionality.
      */
     void SigilDevBlog();
@@ -591,7 +585,7 @@ private slots:
     /**
      * Return a map of stylesheets included/excluded for all given resources
      */
-    QList< std::pair<QString, bool> > GetStylesheetsMap(QList<Resource *> resources);
+    QList<std::pair<QString, bool>> GetStylesheetsMap(QList<Resource *> resources);
 
     /**
      * Return the list of stylesheets linked to the given resource
@@ -637,7 +631,7 @@ private slots:
 
     void UpdateClipsUI();
 
-    /** 
+    /**
      * support for plugins
      */
     void loadPluginsMenu();
@@ -681,7 +675,7 @@ private:
      *
      * @param new_book The new book for editing.
      */
-    void SetNewBook(QSharedPointer< Book > new_book);
+    void SetNewBook(QSharedPointer<Book> new_book);
 
     /**
      * Creates a new, empty book and replaces
@@ -738,7 +732,7 @@ private:
      *
      * @return The save dialog filters.
      */
-    static const QMap< QString, QString > GetSaveFiltersMap();
+    static const QMap<QString, QString> GetSaveFiltersMap();
 
     /**
      * Sets the current file in the window title and also
@@ -796,7 +790,7 @@ private:
      *
      * @param openfilepath The path to the file to load. Can be empty.
      */
-    void LoadInitialFile(const QString &openfilepath);
+    void LoadInitialFile(const QString &openfilepath, bool is_internal = false);
 
     /**
      * Connects all the required signals to their slots.
@@ -845,9 +839,14 @@ private:
     QString m_CurrentFilePath;
 
     /**
+     * The name of the current file loaded.
+     */
+    QString m_CurrentFileName;
+
+    /**
      * The book currently being worked on.
      */
-    QSharedPointer< Book > m_Book;
+    QSharedPointer<Book> m_Book;
 
     /**
      * The last folder from which the user opened or saved a file.
@@ -928,7 +927,7 @@ private:
      * A map with keys being extensions of file types
      * we can load, and the values being filters for use in file dialogs.
      */
-    const QMap< QString, QString > c_SaveFilters;
+    const QMap<QString, QString> c_SaveFilters;
 
     /**
      * A map with keys being extensions of file types
@@ -995,11 +994,11 @@ private:
     /**
      * dynamically updated plugin menus and actions
      */
-    QMenu * m_menuPlugins;
-    QMenu * m_menuPluginsInput;
-    QMenu * m_menuPluginsOutput;
-    QMenu * m_menuPluginsEdit;
-    QAction * m_actionManagePlugins;
+    QMenu *m_menuPlugins;
+    QMenu *m_menuPluginsInput;
+    QMenu *m_menuPluginsOutput;
+    QMenu *m_menuPluginsEdit;
+    QAction *m_actionManagePlugins;
     bool m_SaveCSS;
 
     /**
