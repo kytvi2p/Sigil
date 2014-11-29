@@ -41,6 +41,7 @@
 #include "Misc/CSSInfo.h"
 #include "Misc/PasteTarget.h"
 #include "Misc/SettingsStore.h"
+#include "Misc/ValidationResult.h"
 #include "MiscEditors/ClipEditorModel.h"
 #include "MiscEditors/IndexEditorModel.h"
 #include "MiscEditors/SearchEditorModel.h"
@@ -196,6 +197,7 @@ public:
      */
     bool LoadFile(const QString &fullfilepath, bool is_internal = false);
 
+    void SetValidationResults(const QList<ValidationResult> &results);
 
 public slots:
     void AnyCodeView();
@@ -998,6 +1000,7 @@ private:
     QMenu *m_menuPluginsInput;
     QMenu *m_menuPluginsOutput;
     QMenu *m_menuPluginsEdit;
+    QMenu *m_menuPluginsValidation;
     QAction *m_actionManagePlugins;
     bool m_SaveCSS;
 

@@ -1,8 +1,64 @@
-sigil (0.8.1-1ubuntu1) trusty; urgency=medium
+sigil (0.8.2-1) unstable; urgency=medium
 
-  * Build for Trusty
+  [ John Schember ]
+  * update release checklist.
 
- -- Kill Your TV <killyourtv@i2pmail.org>  Mon, 13 Oct 2014 10:19:13 +0000
+  [ Kevin Hendricks ]
+  * Make opf/html parsing more robust to improper escaping of meta contents
+  * Future proof against HTMLParser unesacpe deprecated in Python 3.4
+
+  [ John Schember ]
+  * Add validation result type and allow the validation view to load a list of
+    this type.
+  * Provide mainwindow with a public function so we can set results.
+  * Add validation type results to plugin runner.
+  * Fix type.
+  * Update ingore file not to ignore .py files because they're used for Python
+    launcher.
+  * Fully support validation plugin type.
+
+  [ Kevin Hendricks ]
+  * Make opf and xhtml parsers more robust to very poor xml
+  * Fix error in an image name inside epub
+  * Move misplaced doc epub
+  * Add Launcher Revision, improve text_iter, fix read/write/delete file
+    interface
+
+  [ Nicolas Kaiser ]
+  * fix typos in README.md
+
+  [ Kevin Hendricks ]
+  * Fix not enough arguments bug in quickparser
+  * Fix for typo in _-guide_types from Doitsu
+  * Fix for yet another guide related bug
+  * Do NOT lowercase all attribute names
+  * Add support for multiple python engines for plugin.xml
+  * Make plugin stdout immediately appear in Plugin window (set unbuffered)
+  * Set launcher version for new release
+  * Update ChangeLog.txt for coming release
+  * Find the last occurence of xml header when skipping extraneous plugin output
+  * Preparing for a new version of the Plugin Framework doc
+  * New version of Sigil Plugin Framework doc
+  * Strip redundant opf: prefix when parsing cotent.opf
+  * Disconnect ManagePlugins menu to prevent multiple connections
+  * Add full path to PluginRunner.h
+  * Fix for size_t linker issues in ValidationResult
+  * Revert back to using size_t
+  * Fix for proper plugin deletion of original files in ebook
+  * Another fix for deletefile in wrapper.py
+  * Must use resource->Delete() to physically remove the resource
+  * Consolas fontmetrics are broken on some platforms, replace with Courier New
+  * Updating to newer version of Plugin Framework epub
+  * Rev 4 of Sigil_Plugin_Framework
+
+  [ John Schember ]
+  * Update translations.
+  * Bump version
+
+  [ Kill Your TV ]
+  * New upstream release
+
+ -- Kill Your TV <killyourtv@i2pmail.org>  Sat, 29 Nov 2014 00:06:58 +0000
 
 sigil (0.8.1-1) unstable; urgency=medium
 
