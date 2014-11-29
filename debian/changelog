@@ -1,3 +1,9 @@
+sigil (0.8.2-1~trusty+1) trusty; urgency=medium
+
+  * Building for Trusty
+
+ -- Kill Your TV <killyourtv@i2pmail.org>  Sat, 29 Nov 2014 00:23:05 +0000
+
 sigil (0.8.2-1) unstable; urgency=medium
 
   [ John Schember ]
