@@ -1,3 +1,9 @@
+sigil (0.8.2-1ubuntu1) utopic; urgency=medium
+
+  * Building for Utopic
+
+ -- Kill Your TV <killyourtv@i2pmail.org>  Sat, 29 Nov 2014 00:21:21 +0000
+
 sigil (0.8.2-1) unstable; urgency=medium
 
   [ John Schember ]
