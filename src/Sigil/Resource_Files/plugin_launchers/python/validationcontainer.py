@@ -27,23 +27,19 @@
 
 from __future__ import unicode_literals, division, absolute_import, print_function
 
-import sys
-import os
-from quickparser import QuickXHTMLParser
+from outputcontainer import OutputContainer
+from validationresult import ValidationResult
 
-class ContainerException(Exception):
-    pass
+class ValidationContainer(OutputContainer):
 
-class InputContainer(object):
+    TYPE_INFO  = 'info'
+    TYPE_WARN  = 'warning'
+    TYPE_ERROR = 'error'
 
-    def __init__(self, wrapper,  debug = False):
-        self._debug = debug
-        self._w = wrapper
-        self.qp=QuickXHTMLParser()
+    def __init__(self, wrapper,  debug=False):
+        # List of validation results
+        self.results = []
+        super(ValidationContainer, self).__init__(wrapper, debug)
 
-    def launcher_version(self):
-        return self._w.getversion()
-
-    def addotherfile(self, book_href, data):
-        # creates a new file not in manifest with desired ebook root relative href
-        self._w.addotherfile(book_href, data)
+    def add_result(self, restype, filename, linenumber, message):
+        self.results.append(ValidationResult(restype, filename, linenumber, message))
