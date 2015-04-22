@@ -1,3 +1,94 @@
+sigil (0.8.6-1) experimental; urgency=medium
+
+  [ John Schember ]
+  * Update ReleaseChecklist.md
+  * Try to fix compile error with older versions of g++ that don't fully
+    support c++ 11.
+  * Add section to install docs about needing a c++11 compiler and giving some
+    examples.
+  * Auto close plugin runner when running validation plugins are successful.
+
+  [ Kevin Hendricks ]
+  * Add in support for plugin preferences by D. Massay
+
+  [ Doug Massay ]
+  * Add plugin dialog remembers last folder opened
+  * Refine last_folder support for Add Plugin dialog.
+
+  [ Kevin Hendricks ]
+  * Prevent spurious warning on Python 2.7 when updating sys.path
+  * Fix for MacOS X invocation for CSS W3C online validation
+
+  [ Doug Massay ]
+  * Tweaks for building/installing on Linux.
+  * Add ability to choose between *.rpm or *.deb package
+
+  [ John Schember ]
+  * feed back for qt5.4 changes for building.
+
+  [ Kevin Hendricks ]
+  * Force Preview to update after BookView
+  * Create clearMemoryCaches with no fontCache invalidation
+  * More properly handle loadFinished signal in BookViewPreview
+  * Fix redefined signals in subclasses warnings
+
+  [ Doug Massay ]
+  * Update Linux compilation/installation instructions.
+  * Fix typos in Linux compilation/installation instructions.
+  * More typo fixes in Linux compilation/installation instructions.
+
+  [ Kevin Hendricks ]
+  * Fix use of previously freed memory
+  * Remove unused QWebInspectors, fix PreviewWindow show/hide use after free
+  * Revert meaningless change
+  * Cleanup and remove commented out code
+  * Try to prevent memory corruption when closing MainWindow
+  * Pass parent of 0 to QMenuBar per spec for Qt on Mac OS X
+  * Remove files that shoudl have been ignored
+  * Bug fix to prevent dangling QAction pointers in KeyboardShortcutManager
+  * Minor cleanups of last change
+  * Update ChangeLog in prep for next release
+
+  [ Jan-Willem van der Veen ]
+  * Cleaned up source code.
+  * Removed references to QPushButton. Removed GenerateTocFromHeadings and
+    GenerateTocRequest. Connect collapseAction and expandAction directly to
+    m_TreeView. Removed CollapseAll and ExpandAll. Increased the
+    COLUMN_INDENTATION so the open branch indicator in Linux is no more
+    partialy hidden.
+
+  [ John Schember ]
+  * Add qt5webchannel dependency to window installation.
+  * Update translations.
+  * Update minimum OS X version to 10.10 since builds are now on 10.10.
+  * -mAllow latest release of 10.9 (10.9.5) to be used.
+  * Add qt 5.4 as a minimum qt requirnment. Add the ability to set a code sign
+    id for OS X and have addframeworks sign the application.
+  * Update docs.
+  * add more info.
+  * update docs.
+  * update docs.
+  * bump version.
+  * fix warning, update docs.
+
+  [ Kevin Hendricks ]
+  * Fix for removeall plugins bug
+
+  [ John Schember ]
+  * Documentation update.
+  * Documentation update.
+  * Documentation update.
+  * Documentation update.
+  * Documentation update.
+  * Bump version to 0.8.4.
+  * 0.8.5 changeset.
+  * Updates for 0.8.6
+
+  [ Kill Your TV ]
+  * New upstream release
+
+ -- Kill Your TV <killyourtv@i2pmail.org>  Wed, 22 Apr 2015 22:25:00 +0000
+
 sigil (0.8.2-1) unstable; urgency=medium
 
   [ John Schember ]

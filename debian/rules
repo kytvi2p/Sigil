@@ -12,3 +12,10 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 export QT_SELECT := qt5
 %:
 	dh $@ --parallel
+
+override_dh_auto_configure:
+	dh_auto_configure -- \
+	-DCMAKE_BUILD_TYPE=Release -DUSE_SYSTEM_LIBS=1
+
+override_dh_install:
+	dh_install --fail-missing
