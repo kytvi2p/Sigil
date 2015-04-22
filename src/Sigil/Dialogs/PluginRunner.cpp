@@ -197,7 +197,6 @@ void PluginRunner::processOutput()
     m_pluginOutput = m_pluginOutput + newbytedata;
 }
 
-
 void PluginRunner::pluginFinished(int exitcode, QProcess::ExitStatus exitstatus)
 {
     if (exitstatus == QProcess::CrashExit) {
@@ -255,7 +254,7 @@ void PluginRunner::pluginFinished(int exitcode, QProcess::ExitStatus exitstatus)
                 break;
             }
         }
-        if (! tabs_will_remain) {
+        if (!tabs_will_remain) {
             Resource *xhtmlresource = remainingResources.at(0);
             m_mainWindow->OpenResource(*xhtmlresource);
         }
@@ -290,13 +289,26 @@ void PluginRunner::pluginFinished(int exitcode, QProcess::ExitStatus exitstatus)
             m_bookBrowser->BookContentModified();
             m_bookBrowser->Refresh();
             m_book->SetModified();
-            // QWebSettings::clearMemoryCaches() and updates current tab
+            // clearMemoryCaches() and updates current tab
             m_mainWindow->ResourcesAddedOrDeleted();
         }
 #ifdef Q_OS_MAC
     }
 #endif
     ui.statusLbl->setText("Status: " + m_result);
+
+    // Validation plugins we auto close the plugin runner dialog
+    // since they'll see the results in the results panel.
+    //
+    // XXX: Technically we're only checking if validation results
+    // were checked. A plugin could do other things and set validation
+    // results too. We really should check that everything else a
+    // plugin can set is really empty before calling accept because
+    // it could have actual info the user needs to see in the dialog.
+    if (!m_validationResults.isEmpty()) {
+        accept();
+        return;
+    }
 }
 
 

@@ -224,6 +224,8 @@ def main(argv=unicode_argv()):
     script_type = argv[3]
     target_file = argv[4]
     script_home = os.path.dirname(target_file)
+    plugin_name = os.path.split(script_home)[-1]
+    plugin_dir = os.path.dirname(script_home)
     script_module = os.path.splitext(os.path.basename(target_file))[0]
 
     # do basic sanity checking anyway
@@ -240,8 +242,7 @@ def main(argv=unicode_argv()):
         return -1
 
     # update sys with path to target module home directory
-    if script_home not in sys.path:
-        sys.path.append(script_home)
+    sys.path.append(script_home)
 
     # load and parse opf if present
     op = None
@@ -250,7 +251,7 @@ def main(argv=unicode_argv()):
         op = Opf_Parser(opf_path)
 
     # create a wrapper for record keeping and safety
-    rk = Wrapper(ebook_root, outdir, op)
+    rk = Wrapper(ebook_root, outdir, op, plugin_dir, plugin_name)
 
     # get the correct container
     if script_type == 'edit':
