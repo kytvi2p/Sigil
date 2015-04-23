@@ -25,6 +25,7 @@
 #include <QtCore/QUrl>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
+#include <QtWebKit/QWebSettings>
 #include <QtWebKitWidgets/QWebFrame>
 
 #include "BookManipulation/XercesCppUse.h"
@@ -60,8 +61,7 @@ BookViewPreview::BookViewPreview(QWidget *parent)
       c_GetParentTags(Utility::ReadUnicodeTextFile(":/javascript/get_parent_tags.js")),
       m_CaretLocationUpdate(QString()),
       m_pendingLoadCount(0),
-      m_pendingScrollToFragment(QString()),
-      m_Inspector(NULL)
+      m_pendingScrollToFragment(QString())
 {
     setContextMenuPolicy(Qt::CustomContextMenu);
     // Set the Zoom factor but be sure no signals are set because of this.
@@ -72,6 +72,8 @@ BookViewPreview::BookViewPreview(QWidget *parent)
     // Enable our link filter.
     page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
     page()->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
+    // This should not be needed on Windows if we simply include the correct qt plugins
+    // page()->settings()->setAttribute(QWebSettings::PluginsEnabled, true);
     CreateContextMenuActions();
     ConnectSignalsToSlots();
 }
@@ -80,7 +82,7 @@ BookViewPreview::~BookViewPreview()
 {
     if (m_ViewWebPage != NULL) {
         delete m_ViewWebPage;
-        m_ViewWebPage = NULL;
+        m_ViewWebPage = 0;
     }
 
     if (m_InspectElement) {
@@ -88,10 +90,6 @@ BookViewPreview::~BookViewPreview()
         m_InspectElement = 0;
     }
 
-    if (m_Inspector) {
-        delete m_Inspector;
-        m_Inspector = NULL;
-    }
 }
 
 QString BookViewPreview::GetCaretLocationUpdate()
@@ -338,9 +336,9 @@ void BookViewPreview::SetUpFindForSelectedText(const QString &search_regex)
     // Nothing to do for Book Preview
 }
 
-void BookViewPreview::UpdateFinishedState(int progress)
+void BookViewPreview::UpdateFinishedState(bool okay)
 {
-    if (progress == 100) {
+    if (okay) {
         m_isLoadFinished = true;
         emit DocumentLoaded();
     } else {
@@ -736,7 +734,7 @@ void BookViewPreview::ConnectSignalsToSlots()
 {
     connect(this,  SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(OpenContextMenu(const QPoint &)));
     connect(m_InspectElement,    SIGNAL(triggered()),  this, SLOT(InspectElement()));
-    connect(page(), SIGNAL(loadProgress(int)), this, SLOT(UpdateFinishedState(int)));
+    connect(page(), SIGNAL(loadFinished(bool)), this, SLOT(UpdateFinishedState(bool)));
     connect(page(), SIGNAL(linkClicked(const QUrl &)), SIGNAL(LinkClicked(const QUrl &)));
     connect(page(), SIGNAL(loadFinished(bool)), this, SLOT(WebPageJavascriptOnLoad()));
 }

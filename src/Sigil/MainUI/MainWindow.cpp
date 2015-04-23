@@ -1,8 +1,8 @@
 /************************************************************************
 **
-**  Copyright (C) 2012, 2013 John Schember <john@nachtimwald.com>
-**  Copyright (C) 2012, 2013 Dave Heiland
-**  Copyright (C) 2009, 2010, 2011  Strahinja Markovic  <strahinja.markovic@gmail.com>
+**  Copyright (C) 2012-2015 John Schember <john@nachtimwald.com>
+**  Copyright (C) 2012-2013 Dave Heiland
+**  Copyright (C) 2009-2011  Strahinja Markovic  <strahinja.markovic@gmail.com>
 **
 **  This file is part of Sigil.
 **
@@ -90,21 +90,20 @@
 #include "Tabs/OPFTab.h"
 #include "Tabs/TabManager.h"
 
-static const int TEXT_ELIDE_WIDTH           = 300;
-static const QString SETTINGS_GROUP         = "mainwindow";
-const float ZOOM_STEP                = 0.1f;
-const float ZOOM_MIN                 = 0.09f;
-const float ZOOM_MAX                 = 5.0f;
-const float ZOOM_NORMAL              = 1.0f;
-static const int ZOOM_SLIDER_MIN            = 0;
-static const int ZOOM_SLIDER_MAX            = 1000;
-static const int ZOOM_SLIDER_MIDDLE         = 500;
-static const int ZOOM_SLIDER_WIDTH          = 140;
-static const QString DONATE_WIKI            = "http://code.google.com/p/sigil/wiki/Donate";
-static const QString SIGIL_DEV_BLOG         = "http://sigildev.blogspot.com/";
-static const QString USER_GUIDE_URL         = "http://web.sigil.googlecode.com/git/files/OEBPS/Text/introduction.html";
-static const QString FAQ_URL                = "http://web.sigil.googlecode.com/git/files/OEBPS/Text/faq.html";
-static const QString TUTORIALS_URL          = "http://web.sigil.googlecode.com/git/files/OEBPS/Text/tutorials.html";
+static const int TEXT_ELIDE_WIDTH   = 300;
+static const QString SETTINGS_GROUP = "mainwindow";
+const float ZOOM_STEP               = 0.1f;
+const float ZOOM_MIN                = 0.09f;
+const float ZOOM_MAX                = 5.0f;
+const float ZOOM_NORMAL             = 1.0f;
+static const int ZOOM_SLIDER_MIN    = 0;
+static const int ZOOM_SLIDER_MAX    = 1000;
+static const int ZOOM_SLIDER_MIDDLE = 500;
+static const int ZOOM_SLIDER_WIDTH  = 140;
+
+static const QString DONATE         = "http://sigil-ebook.com/donate";
+static const QString SIGIL_WEBSITE  = "http://sigil-ebook.com";
+static const QString USER_GUIDE_URL = "https://github.com/user-none/Sigil/tree/master/docs";
 
 static const QString BOOK_BROWSER_NAME            = "bookbrowser";
 static const QString FIND_REPLACE_NAME            = "findreplace";
@@ -173,6 +172,7 @@ MainWindow::MainWindow(const QString &openfilepath, bool is_internal, QWidget *p
     m_menuPluginsInput(NULL),
     m_menuPluginsOutput(NULL),
     m_menuPluginsEdit(NULL),
+    m_menuPluginsValidation(NULL),
     m_SaveCSS(false)
 {
     ui.setupUi(this);
@@ -215,12 +215,12 @@ MainWindow::~MainWindow()
 // Actions can be removed
 void MainWindow::loadPluginsMenu()
 {
-    m_menuPlugins=ui.menuPlugins;
-    m_actionManagePlugins=ui.actionManage_Plugins;
+    PluginDB *pdb = PluginDB::instance();
+
+    m_menuPlugins = ui.menuPlugins;
+    m_actionManagePlugins = ui.actionManage_Plugins;
 
     unloadPluginsMenu();
-
-    PluginDB *pdb = PluginDB::instance();
 
     connect(m_actionManagePlugins, SIGNAL(triggered()), this, SLOT(ManagePluginsDialog()));
 
@@ -242,20 +242,24 @@ void MainWindow::loadPluginsMenu()
                 connect(m_menuPluginsInput,  SIGNAL(triggered(QAction *)), this, SLOT(runPlugin(QAction *)));
             }
             m_menuPluginsInput->addAction(pname);
-
         } else if (ptype == "output") {
             if (m_menuPluginsOutput == NULL) {
                 m_menuPluginsOutput = m_menuPlugins->addMenu(tr("Output"));
                 connect(m_menuPluginsOutput, SIGNAL(triggered(QAction *)), this, SLOT(runPlugin(QAction *)));
             }
             m_menuPluginsOutput->addAction(pname);
-
-        } else {
+        } else if (ptype == "edit") {
             if (m_menuPluginsEdit == NULL) {
                 m_menuPluginsEdit = m_menuPlugins->addMenu(tr("Edit"));
                 connect(m_menuPluginsEdit,   SIGNAL(triggered(QAction *)), this, SLOT(runPlugin(QAction *)));
             }
             m_menuPluginsEdit->addAction(pname);
+        } else if (ptype == "validation") {
+            if (m_menuPluginsValidation == NULL) {
+                m_menuPluginsValidation = m_menuPlugins->addMenu(tr("Validation"));
+                connect(m_menuPluginsValidation,   SIGNAL(triggered(QAction *)), this, SLOT(runPlugin(QAction *)));
+            }
+            m_menuPluginsValidation->addAction(pname);
         }
     }
 }
@@ -264,11 +268,11 @@ void MainWindow::loadPluginsMenu()
 void MainWindow::unloadPluginsMenu()
 {
     if (m_menuPlugins != NULL) {
-        if (m_menuPluginsEdit != NULL) {
-            disconnect(m_menuPluginsEdit, SIGNAL(triggered(QAction *)), this, SLOT(runPlugin(QAction *)));
-            m_menuPluginsEdit->clear();
-            m_menuPlugins->removeAction(m_menuPluginsEdit->menuAction());
-            m_menuPluginsEdit = NULL;
+        if (m_menuPluginsInput != NULL) {
+            disconnect(m_menuPluginsInput, SIGNAL(triggered(QAction *)), this, SLOT(runPlugin(QAction *)));
+            m_menuPluginsInput->clear();
+            m_menuPlugins->removeAction(m_menuPluginsInput->menuAction());
+            m_menuPluginsInput = NULL;
         }
         if (m_menuPluginsOutput != NULL) {
             disconnect(m_menuPluginsOutput, SIGNAL(triggered(QAction *)), this, SLOT(runPlugin(QAction *)));
@@ -276,13 +280,20 @@ void MainWindow::unloadPluginsMenu()
             m_menuPlugins->removeAction(m_menuPluginsOutput->menuAction());
             m_menuPluginsOutput = NULL;
         }
-        if (m_menuPluginsInput != NULL) {
-            disconnect(m_menuPluginsInput, SIGNAL(triggered(QAction *)), this, SLOT(runPlugin(QAction *)));
-            m_menuPluginsInput->clear();
-            m_menuPlugins->removeAction(m_menuPluginsInput->menuAction());
-            m_menuPluginsInput = NULL;
+        if (m_menuPluginsEdit != NULL) {
+            disconnect(m_menuPluginsEdit, SIGNAL(triggered(QAction *)), this, SLOT(runPlugin(QAction *)));
+            m_menuPluginsEdit->clear();
+            m_menuPlugins->removeAction(m_menuPluginsEdit->menuAction());
+            m_menuPluginsEdit = NULL;
+        }
+        if (m_menuPluginsValidation != NULL) {
+            disconnect(m_menuPluginsValidation, SIGNAL(triggered(QAction *)), this, SLOT(runPlugin(QAction *)));
+            m_menuPluginsValidation->clear();
+            m_menuPlugins->removeAction(m_menuPluginsValidation->menuAction());
+            m_menuPluginsValidation = NULL;
         }
     }
+    disconnect(m_actionManagePlugins, SIGNAL(triggered()), this, SLOT(ManagePluginsDialog()));
 }
 
 void MainWindow::runPlugin(QAction *action)
@@ -559,6 +570,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
     if (MaybeSaveDialogSaysProceed()) {
         ShowMessageOnStatusBar(tr("Sigil is closing..."));
         WriteSettings();
+        KeyboardShortcutManager *sm = KeyboardShortcutManager::instance();
+        sm->removeActionsOf(this);
 
         // The user may have unsaved search/clip/index/meta entries if dialogs are open.
         // Prompt them to save or discard their changes if any.
@@ -578,6 +591,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
             m_SpellcheckEditor->ForceClose();
         }
 
+        if ((m_PreviewWindow)  && m_PreviewWindow->isVisible()) {
+            m_PreviewWindow->hide();
+        }
         event->accept();
     } else {
         event->ignore();
@@ -976,6 +992,25 @@ void MainWindow::SpellcheckEditorDialog()
 }
 
 
+void MainWindow::clearMemoryCaches()
+{
+    // See https://bugreports.qt-project.org/browse/QTBUG-4350
+    // QWebSettinbgs::clearMemoryCaches();
+
+    // replace the above with a similar sequence 
+    // that does not invalidate the fontCache
+
+    // toggle memory caches to disable and then re-enable
+    QWebSettings::setObjectCacheCapacities(0,0,0);
+    QWebSettings::setObjectCacheCapacities(0, 0, 100 * 1024 * 1024);
+
+    // do the same to flush the page cache
+    int numpages = QWebSettings::maximumPagesInCache();
+    QWebSettings::setMaximumPagesInCache(0);
+    QWebSettings::setMaximumPagesInCache(numpages);
+}
+
+
 void MainWindow::AddCover()
 {
     // Get the image to use.
@@ -1070,7 +1105,7 @@ void MainWindow::AddCover()
 
     m_BookBrowser->Refresh();
     m_Book->SetModified();
-    QWebSettings::clearMemoryCaches();
+    clearMemoryCaches();
     OpenResourceAndWaitUntilLoaded(*html_cover_resource);
     // Reload the tab to ensure it reflects updated image.
     FlowTab *flow_tab = GetCurrentFlowTab();
@@ -1466,7 +1501,7 @@ void MainWindow::InsertFilesFromDisk()
     QStringList filenames = m_BookBrowser->AddExisting(true);
     connect(m_BookBrowser, SIGNAL(ResourcesAdded()), this, SLOT(ResourcesAddedOrDeleted()));
     // Since we disconnected the signal we will have missed forced clearing of cache
-    QWebSettings::clearMemoryCaches();
+    clearMemoryCaches();
     QStringList internal_filenames;
     foreach(QString filename, filenames) {
         QString internal_filename = filename.right(filename.length() - filename.lastIndexOf("/") - 1);
@@ -2046,13 +2081,21 @@ QStringList MainWindow::GetStylesheetsAlreadyLinked(Resource *resource)
 
 void MainWindow::RemoveResources(QList<Resource *> resources)
 {
+    // work around Qt bug when deleting png images on page shown by both
+    // BookView and Preview by temporarily hiding the PreviewWindow
+    bool pw_showing = m_PreviewWindow->IsVisible();
+    if ((pw_showing) && (m_ViewState == MainWindow::ViewState_BookView)) {
+        m_PreviewWindow->hide();
+    }
     // Provide the open tab list to ensure one tab stays open
     if (resources.count() > 0) {
         m_BookBrowser->RemoveResources(m_TabManager.GetTabResources(), resources);
     } else {
         m_BookBrowser->RemoveSelection(m_TabManager.GetTabResources());
     }
-
+    if ((pw_showing) && !m_PreviewWindow->IsVisible()) {
+        m_PreviewWindow->show();
+    }
     ShowMessageOnStatusBar(tr("File(s) deleted."));
 }
 
@@ -2346,27 +2389,15 @@ void MainWindow::UserGuide()
 }
 
 
-void MainWindow::FrequentlyAskedQuestions()
-{
-    QDesktopServices::openUrl(QUrl(FAQ_URL));
-}
-
-
-void MainWindow::Tutorials()
-{
-    QDesktopServices::openUrl(QUrl(TUTORIALS_URL));
-}
-
-
 void MainWindow::Donate()
 {
-    QDesktopServices::openUrl(QUrl(DONATE_WIKI));
+    QDesktopServices::openUrl(QUrl(DONATE));
 }
 
 
-void MainWindow::SigilDevBlog()
+void MainWindow::SigilWebsite()
 {
-    QDesktopServices::openUrl(QUrl(SIGIL_DEV_BLOG));
+    QDesktopServices::openUrl(QUrl(SIGIL_WEBSITE));
 }
 
 
@@ -3293,7 +3324,7 @@ void MainWindow::SetNewBook(QSharedPointer<Book> new_book)
 
 void MainWindow::ResourcesAddedOrDeleted()
 {
-    QWebSettings::clearMemoryCaches();
+    clearMemoryCaches();
 
     // Make sure currently visible tab is updated immediately
     FlowTab *flow_tab = GetCurrentFlowTab();
@@ -3403,6 +3434,12 @@ bool MainWindow::LoadFile(const QString &fullfilepath, bool is_internal)
     // Fallback to displaying a new book instead so GUI integrity is maintained.
     CreateNewBook();
     return false;
+}
+
+
+void MainWindow::SetValidationResults(const QList<ValidationResult> &results)
+{
+    m_ValidationResultsView->LoadResults(results);
 }
 
 
@@ -3884,158 +3921,158 @@ void MainWindow::ExtendUI()
     KeyboardShortcutManager *sm = KeyboardShortcutManager::instance();
     // Note: shortcut action Ids should not be translated.
     // File
-    sm->registerAction(ui.actionNew, "MainWindow.New");
-    sm->registerAction(ui.actionNewHTMLFile, "MainWindow.NewHTMLFile");
-    sm->registerAction(ui.actionNewCSSFile, "MainWindow.NewCSSFile");
-    sm->registerAction(ui.actionNewSVGFile, "MainWindow.NewSVGFile");
-    sm->registerAction(ui.actionAddExistingFile, "MainWindow.AddExistingFile");
-    sm->registerAction(ui.actionOpen, "MainWindow.Open");
+    sm->registerAction(this, ui.actionNew, "MainWindow.New");
+    sm->registerAction(this, ui.actionNewHTMLFile, "MainWindow.NewHTMLFile");
+    sm->registerAction(this, ui.actionNewCSSFile, "MainWindow.NewCSSFile");
+    sm->registerAction(this, ui.actionNewSVGFile, "MainWindow.NewSVGFile");
+    sm->registerAction(this, ui.actionAddExistingFile, "MainWindow.AddExistingFile");
+    sm->registerAction(this, ui.actionOpen, "MainWindow.Open");
 #ifndef Q_OS_MAC
-    sm->registerAction(ui.actionClose, "MainWindow.Close");
+    sm->registerAction(this, ui.actionClose, "MainWindow.Close");
 #endif
-    sm->registerAction(ui.actionSave, "MainWindow.Save");
-    sm->registerAction(ui.actionSaveAs, "MainWindow.SaveAs");
-    sm->registerAction(ui.actionSaveACopy, "MainWindow.SaveACopy");
-    sm->registerAction(ui.actionPrintPreview, "MainWindow.PrintPreview");
-    sm->registerAction(ui.actionPrint, "MainWindow.Print");
-    sm->registerAction(ui.actionExit, "MainWindow.Exit");
+    sm->registerAction(this, ui.actionSave, "MainWindow.Save");
+    sm->registerAction(this, ui.actionSaveAs, "MainWindow.SaveAs");
+    sm->registerAction(this, ui.actionSaveACopy, "MainWindow.SaveACopy");
+    sm->registerAction(this, ui.actionPrintPreview, "MainWindow.PrintPreview");
+    sm->registerAction(this, ui.actionPrint, "MainWindow.Print");
+    sm->registerAction(this, ui.actionExit, "MainWindow.Exit");
     // Edit
-    sm->registerAction(ui.actionUndo, "MainWindow.Undo");
-    sm->registerAction(ui.actionRedo, "MainWindow.Redo");
-    sm->registerAction(ui.actionCut, "MainWindow.Cut");
-    sm->registerAction(ui.actionCopy, "MainWindow.Copy");
-    sm->registerAction(ui.actionPaste, "MainWindow.Paste");
-    sm->registerAction(ui.actionPasteClipboardHistory, "MainWindow.PasteClipboardHistory");
-    sm->registerAction(ui.actionDeleteLine, "MainWindow.DeleteLine");
-    sm->registerAction(ui.actionInsertFile, "MainWindow.InsertFile");
-    sm->registerAction(ui.actionInsertSpecialCharacter, "MainWindow.InsertSpecialCharacter");
-    sm->registerAction(ui.actionInsertId, "MainWindow.InsertId");
-    sm->registerAction(ui.actionInsertHyperlink, "MainWindow.InsertHyperlink");
-    sm->registerAction(ui.actionMarkForIndex, "MainWindow.MarkForIndex");
-    sm->registerAction(ui.actionSplitSection, "MainWindow.SplitSection");
-    sm->registerAction(ui.actionInsertSGFSectionMarker, "MainWindow.InsertSGFSectionMarker");
-    sm->registerAction(ui.actionSplitOnSGFSectionMarkers, "MainWindow.SplitOnSGFSectionMarkers");
-    sm->registerAction(ui.actionInsertClosingTag, "MainWindow.InsertClosingTag");
+    sm->registerAction(this, ui.actionUndo, "MainWindow.Undo");
+    sm->registerAction(this, ui.actionRedo, "MainWindow.Redo");
+    sm->registerAction(this, ui.actionCut, "MainWindow.Cut");
+    sm->registerAction(this, ui.actionCopy, "MainWindow.Copy");
+    sm->registerAction(this, ui.actionPaste, "MainWindow.Paste");
+    sm->registerAction(this, ui.actionPasteClipboardHistory, "MainWindow.PasteClipboardHistory");
+    sm->registerAction(this, ui.actionDeleteLine, "MainWindow.DeleteLine");
+    sm->registerAction(this, ui.actionInsertFile, "MainWindow.InsertFile");
+    sm->registerAction(this, ui.actionInsertSpecialCharacter, "MainWindow.InsertSpecialCharacter");
+    sm->registerAction(this, ui.actionInsertId, "MainWindow.InsertId");
+    sm->registerAction(this, ui.actionInsertHyperlink, "MainWindow.InsertHyperlink");
+    sm->registerAction(this, ui.actionMarkForIndex, "MainWindow.MarkForIndex");
+    sm->registerAction(this, ui.actionSplitSection, "MainWindow.SplitSection");
+    sm->registerAction(this, ui.actionInsertSGFSectionMarker, "MainWindow.InsertSGFSectionMarker");
+    sm->registerAction(this, ui.actionSplitOnSGFSectionMarkers, "MainWindow.SplitOnSGFSectionMarkers");
+    sm->registerAction(this, ui.actionInsertClosingTag, "MainWindow.InsertClosingTag");
 #ifndef Q_OS_MAC
-    sm->registerAction(ui.actionPreferences, "MainWindow.Preferences");
+    sm->registerAction(this, ui.actionPreferences, "MainWindow.Preferences");
 #endif
     //Search
-    sm->registerAction(ui.actionFind, "MainWindow.Find");
-    sm->registerAction(ui.actionFindNext, "MainWindow.FindNext");
-    sm->registerAction(ui.actionFindPrevious, "MainWindow.FindPrevious");
-    sm->registerAction(ui.actionReplaceCurrent, "MainWindow.ReplaceCurrent");
-    sm->registerAction(ui.actionReplaceNext, "MainWindow.ReplaceNext");
-    sm->registerAction(ui.actionReplacePrevious, "MainWindow.ReplacePrevious");
-    sm->registerAction(ui.actionReplaceAll, "MainWindow.ReplaceAll");
-    sm->registerAction(ui.actionCount, "MainWindow.Count");
-    sm->registerAction(ui.actionMarkSelection, "MainWindow.MarkSelection");
-    sm->registerAction(ui.actionFindNextInFile, "MainWindow.FindNextInFile");
-    sm->registerAction(ui.actionReplaceNextInFile, "MainWindow.ReplaceNextInFile");
-    sm->registerAction(ui.actionReplaceAllInFile, "MainWindow.ReplaceAllInFile");
-    sm->registerAction(ui.actionCountInFile, "MainWindow.CountInFile");
-    sm->registerAction(ui.actionGoToLine, "MainWindow.GoToLine");
-    sm->registerAction(ui.actionBookmarkLocation, "MainWindow.BookmarkLocation");
-    sm->registerAction(ui.actionGoToLinkOrStyle, "MainWindow.GoToLinkOrStyle");
-    sm->registerAction(ui.actionGoBackFromLinkOrStyle, "MainWindow.GoBackFromLinkOrStyle");
+    sm->registerAction(this, ui.actionFind, "MainWindow.Find");
+    sm->registerAction(this, ui.actionFindNext, "MainWindow.FindNext");
+    sm->registerAction(this, ui.actionFindPrevious, "MainWindow.FindPrevious");
+    sm->registerAction(this, ui.actionReplaceCurrent, "MainWindow.ReplaceCurrent");
+    sm->registerAction(this, ui.actionReplaceNext, "MainWindow.ReplaceNext");
+    sm->registerAction(this, ui.actionReplacePrevious, "MainWindow.ReplacePrevious");
+    sm->registerAction(this, ui.actionReplaceAll, "MainWindow.ReplaceAll");
+    sm->registerAction(this, ui.actionCount, "MainWindow.Count");
+    sm->registerAction(this, ui.actionMarkSelection, "MainWindow.MarkSelection");
+    sm->registerAction(this, ui.actionFindNextInFile, "MainWindow.FindNextInFile");
+    sm->registerAction(this, ui.actionReplaceNextInFile, "MainWindow.ReplaceNextInFile");
+    sm->registerAction(this, ui.actionReplaceAllInFile, "MainWindow.ReplaceAllInFile");
+    sm->registerAction(this, ui.actionCountInFile, "MainWindow.CountInFile");
+    sm->registerAction(this, ui.actionGoToLine, "MainWindow.GoToLine");
+    sm->registerAction(this, ui.actionBookmarkLocation, "MainWindow.BookmarkLocation");
+    sm->registerAction(this, ui.actionGoToLinkOrStyle, "MainWindow.GoToLinkOrStyle");
+    sm->registerAction(this, ui.actionGoBackFromLinkOrStyle, "MainWindow.GoBackFromLinkOrStyle");
     // Format
-    sm->registerAction(ui.actionBold, "MainWindow.Bold");
-    sm->registerAction(ui.actionItalic, "MainWindow.Italic");
-    sm->registerAction(ui.actionUnderline, "MainWindow.Underline");
-    sm->registerAction(ui.actionStrikethrough, "MainWindow.Strikethrough");
-    sm->registerAction(ui.actionSubscript, "MainWindow.Subscript");
-    sm->registerAction(ui.actionSuperscript, "MainWindow.Superscript");
-    sm->registerAction(ui.actionAlignLeft, "MainWindow.AlignLeft");
-    sm->registerAction(ui.actionAlignCenter, "MainWindow.AlignCenter");
-    sm->registerAction(ui.actionAlignRight, "MainWindow.AlignRight");
-    sm->registerAction(ui.actionAlignJustify, "MainWindow.AlignJustify");
-    sm->registerAction(ui.actionInsertNumberedList, "MainWindow.InsertNumberedList");
-    sm->registerAction(ui.actionInsertBulletedList, "MainWindow.InsertBulletedList");
-    sm->registerAction(ui.actionIncreaseIndent, "MainWindow.IncreaseIndent");
-    sm->registerAction(ui.actionDecreaseIndent, "MainWindow.DecreaseIndent");
-    sm->registerAction(ui.actionTextDirectionLTR, "MainWindow.TextDirectionLTR");
-    sm->registerAction(ui.actionTextDirectionRTL, "MainWindow.TextDirectionRTL");
-    sm->registerAction(ui.actionTextDirectionDefault, "MainWindow.TextDirectionDefault");
-    sm->registerAction(ui.actionShowTag, "MainWindow.ShowTag");
-    sm->registerAction(ui.actionRemoveFormatting, "MainWindow.RemoveFormatting");
-    sm->registerAction(ui.actionHeading1, "MainWindow.Heading1");
-    sm->registerAction(ui.actionHeading2, "MainWindow.Heading2");
-    sm->registerAction(ui.actionHeading3, "MainWindow.Heading3");
-    sm->registerAction(ui.actionHeading4, "MainWindow.Heading4");
-    sm->registerAction(ui.actionHeading5, "MainWindow.Heading5");
-    sm->registerAction(ui.actionHeading6, "MainWindow.Heading6");
-    sm->registerAction(ui.actionHeadingNormal, "MainWindow.HeadingNormal");
-    sm->registerAction(ui.actionHeadingPreserveAttributes, "MainWindow.HeadingPreserveAttributes");
-    sm->registerAction(ui.actionCasingLowercase, "MainWindow.CasingLowercase");
-    sm->registerAction(ui.actionCasingUppercase, "MainWindow.CasingUppercase");
-    sm->registerAction(ui.actionCasingTitlecase, "MainWindow.CasingTitlecase");
-    sm->registerAction(ui.actionCasingCapitalize, "MainWindow.CasingCapitalize");
+    sm->registerAction(this, ui.actionBold, "MainWindow.Bold");
+    sm->registerAction(this, ui.actionItalic, "MainWindow.Italic");
+    sm->registerAction(this, ui.actionUnderline, "MainWindow.Underline");
+    sm->registerAction(this, ui.actionStrikethrough, "MainWindow.Strikethrough");
+    sm->registerAction(this, ui.actionSubscript, "MainWindow.Subscript");
+    sm->registerAction(this, ui.actionSuperscript, "MainWindow.Superscript");
+    sm->registerAction(this, ui.actionAlignLeft, "MainWindow.AlignLeft");
+    sm->registerAction(this, ui.actionAlignCenter, "MainWindow.AlignCenter");
+    sm->registerAction(this, ui.actionAlignRight, "MainWindow.AlignRight");
+    sm->registerAction(this, ui.actionAlignJustify, "MainWindow.AlignJustify");
+    sm->registerAction(this, ui.actionInsertNumberedList, "MainWindow.InsertNumberedList");
+    sm->registerAction(this, ui.actionInsertBulletedList, "MainWindow.InsertBulletedList");
+    sm->registerAction(this, ui.actionIncreaseIndent, "MainWindow.IncreaseIndent");
+    sm->registerAction(this, ui.actionDecreaseIndent, "MainWindow.DecreaseIndent");
+    sm->registerAction(this, ui.actionTextDirectionLTR, "MainWindow.TextDirectionLTR");
+    sm->registerAction(this, ui.actionTextDirectionRTL, "MainWindow.TextDirectionRTL");
+    sm->registerAction(this, ui.actionTextDirectionDefault, "MainWindow.TextDirectionDefault");
+    sm->registerAction(this, ui.actionShowTag, "MainWindow.ShowTag");
+    sm->registerAction(this, ui.actionRemoveFormatting, "MainWindow.RemoveFormatting");
+    sm->registerAction(this, ui.actionHeading1, "MainWindow.Heading1");
+    sm->registerAction(this, ui.actionHeading2, "MainWindow.Heading2");
+    sm->registerAction(this, ui.actionHeading3, "MainWindow.Heading3");
+    sm->registerAction(this, ui.actionHeading4, "MainWindow.Heading4");
+    sm->registerAction(this, ui.actionHeading5, "MainWindow.Heading5");
+    sm->registerAction(this, ui.actionHeading6, "MainWindow.Heading6");
+    sm->registerAction(this, ui.actionHeadingNormal, "MainWindow.HeadingNormal");
+    sm->registerAction(this, ui.actionHeadingPreserveAttributes, "MainWindow.HeadingPreserveAttributes");
+    sm->registerAction(this, ui.actionCasingLowercase, "MainWindow.CasingLowercase");
+    sm->registerAction(this, ui.actionCasingUppercase, "MainWindow.CasingUppercase");
+    sm->registerAction(this, ui.actionCasingTitlecase, "MainWindow.CasingTitlecase");
+    sm->registerAction(this, ui.actionCasingCapitalize, "MainWindow.CasingCapitalize");
     // Tools
-    sm->registerAction(ui.actionAddCover, "MainWindow.AddCover");
-    sm->registerAction(ui.actionMetaEditor, "MainWindow.MetaEditor");
-    sm->registerAction(ui.actionEditTOC, "MainWindow.EditTOC");
-    sm->registerAction(ui.actionGenerateTOC, "MainWindow.GenerateTOC");
-    sm->registerAction(ui.actionCreateHTMLTOC, "MainWindow.CreateHTMLTOC");
-    sm->registerAction(ui.actionValidateEpubWithFlightCrew, "MainWindow.ValidateEpub");
-    sm->registerAction(ui.actionValidateStylesheetsWithW3C, "MainWindow.ValidateStylesheetsWithW3C");
-    sm->registerAction(ui.actionAutoSpellCheck, "MainWindow.AutoSpellCheck");
-    sm->registerAction(ui.actionSpellcheckEditor, "MainWindow.SpellcheckEditor");
-    sm->registerAction(ui.actionSpellcheck, "MainWindow.Spellcheck");
-    sm->registerAction(ui.actionAddMisspelledWord, "MainWindow.AddMispelledWord");
-    sm->registerAction(ui.actionIgnoreMisspelledWord, "MainWindow.IgnoreMispelledWord");
-    sm->registerAction(ui.actionClearIgnoredWords, "MainWindow.ClearIgnoredWords");
-    sm->registerAction(ui.actionReports, "MainWindow.Reports");
-    sm->registerAction(ui.actionSearchEditor, "MainWindow.SearchEditor");
-    sm->registerAction(ui.actionClipEditor, "MainWindow.ClipEditor");
-    sm->registerAction(ui.actionAddToIndex, "MainWindow.AddToIndex");
-    sm->registerAction(ui.actionMarkForIndex, "MainWindow.MarkForIndex");
-    sm->registerAction(ui.actionCreateIndex, "MainWindow.CreateIndex");
-    sm->registerAction(ui.actionDeleteUnusedMedia, "MainWindow.DeleteUnusedMedia");
-    sm->registerAction(ui.actionDeleteUnusedStyles, "MainWindow.DeleteUnusedStyles");
+    sm->registerAction(this, ui.actionAddCover, "MainWindow.AddCover");
+    sm->registerAction(this, ui.actionMetaEditor, "MainWindow.MetaEditor");
+    sm->registerAction(this, ui.actionEditTOC, "MainWindow.EditTOC");
+    sm->registerAction(this, ui.actionGenerateTOC, "MainWindow.GenerateTOC");
+    sm->registerAction(this, ui.actionCreateHTMLTOC, "MainWindow.CreateHTMLTOC");
+    sm->registerAction(this, ui.actionValidateEpubWithFlightCrew, "MainWindow.ValidateEpub");
+    sm->registerAction(this, ui.actionValidateStylesheetsWithW3C, "MainWindow.ValidateStylesheetsWithW3C");
+    sm->registerAction(this, ui.actionAutoSpellCheck, "MainWindow.AutoSpellCheck");
+    sm->registerAction(this, ui.actionSpellcheckEditor, "MainWindow.SpellcheckEditor");
+    sm->registerAction(this, ui.actionSpellcheck, "MainWindow.Spellcheck");
+    sm->registerAction(this, ui.actionAddMisspelledWord, "MainWindow.AddMispelledWord");
+    sm->registerAction(this, ui.actionIgnoreMisspelledWord, "MainWindow.IgnoreMispelledWord");
+    sm->registerAction(this, ui.actionClearIgnoredWords, "MainWindow.ClearIgnoredWords");
+    sm->registerAction(this, ui.actionReports, "MainWindow.Reports");
+    sm->registerAction(this, ui.actionSearchEditor, "MainWindow.SearchEditor");
+    sm->registerAction(this, ui.actionClipEditor, "MainWindow.ClipEditor");
+    sm->registerAction(this, ui.actionAddToIndex, "MainWindow.AddToIndex");
+    sm->registerAction(this, ui.actionMarkForIndex, "MainWindow.MarkForIndex");
+    sm->registerAction(this, ui.actionCreateIndex, "MainWindow.CreateIndex");
+    sm->registerAction(this, ui.actionDeleteUnusedMedia, "MainWindow.DeleteUnusedMedia");
+    sm->registerAction(this, ui.actionDeleteUnusedStyles, "MainWindow.DeleteUnusedStyles");
     // View
-    sm->registerAction(ui.actionBookView, "MainWindow.BookView");
-    sm->registerAction(ui.actionCodeView, "MainWindow.CodeView");
-    sm->registerAction(ui.actionToggleViewState, "MainWindow.ToggleViewState");
-    sm->registerAction(ui.actionZoomIn, "MainWindow.ZoomIn");
-    sm->registerAction(ui.actionZoomOut, "MainWindow.ZoomOut");
-    sm->registerAction(ui.actionZoomReset, "MainWindow.ZoomReset");
-    sm->registerAction(m_BookBrowser->toggleViewAction(), "MainWindow.BookBrowser");
-    sm->registerAction(m_ValidationResultsView->toggleViewAction(), "MainWindow.ValidationResults");
-    sm->registerAction(m_TableOfContents->toggleViewAction(), "MainWindow.TableOfContents");
+    sm->registerAction(this, ui.actionBookView, "MainWindow.BookView");
+    sm->registerAction(this, ui.actionCodeView, "MainWindow.CodeView");
+    sm->registerAction(this, ui.actionToggleViewState, "MainWindow.ToggleViewState");
+    sm->registerAction(this, ui.actionZoomIn, "MainWindow.ZoomIn");
+    sm->registerAction(this, ui.actionZoomOut, "MainWindow.ZoomOut");
+    sm->registerAction(this, ui.actionZoomReset, "MainWindow.ZoomReset");
+    sm->registerAction(this, m_BookBrowser->toggleViewAction(), "MainWindow.BookBrowser");
+    sm->registerAction(this, m_ValidationResultsView->toggleViewAction(), "MainWindow.ValidationResults");
+    sm->registerAction(this, m_TableOfContents->toggleViewAction(), "MainWindow.TableOfContents");
     // Window
-    sm->registerAction(ui.actionNextTab, "MainWindow.NextTab");
-    sm->registerAction(ui.actionPreviousTab, "MainWindow.PreviousTab");
-    sm->registerAction(ui.actionCloseTab, "MainWindow.CloseTab");
-    sm->registerAction(ui.actionCloseOtherTabs, "MainWindow.CloseOtherTabs");
-    sm->registerAction(ui.actionPreviousResource, "MainWindow.PreviousResource");
-    sm->registerAction(ui.actionNextResource, "MainWindow.NextResource");
+    sm->registerAction(this, ui.actionNextTab, "MainWindow.NextTab");
+    sm->registerAction(this, ui.actionPreviousTab, "MainWindow.PreviousTab");
+    sm->registerAction(this, ui.actionCloseTab, "MainWindow.CloseTab");
+    sm->registerAction(this, ui.actionCloseOtherTabs, "MainWindow.CloseOtherTabs");
+    sm->registerAction(this, ui.actionPreviousResource, "MainWindow.PreviousResource");
+    sm->registerAction(this, ui.actionNextResource, "MainWindow.NextResource");
     // Help
-    sm->registerAction(ui.actionUserGuide, "MainWindow.UserGuide");
-    sm->registerAction(ui.actionFAQ, "MainWindow.FAQ");
-    sm->registerAction(ui.actionTutorials, "MainWindow.FAQ");
-    sm->registerAction(ui.actionDonate, "MainWindow.Donate");
-    sm->registerAction(ui.actionSigilDevBlog, "MainWindow.SigilDevBlog");
-    sm->registerAction(ui.actionAbout, "MainWindow.About");
+    sm->registerAction(this, ui.actionUserGuide, "MainWindow.UserGuide");
+    sm->registerAction(this, ui.actionFAQ, "MainWindow.FAQ");
+    sm->registerAction(this, ui.actionTutorials, "MainWindow.FAQ");
+    sm->registerAction(this, ui.actionDonate, "MainWindow.Donate");
+    sm->registerAction(this, ui.actionSigilWebsite, "MainWindow.SigilWebsite");
+    sm->registerAction(this, ui.actionAbout, "MainWindow.About");
     // Clips
-    sm->registerAction(ui.actionClip1, "MainWindow.Clip1");
-    sm->registerAction(ui.actionClip2, "MainWindow.Clip2");
-    sm->registerAction(ui.actionClip3, "MainWindow.Clip3");
-    sm->registerAction(ui.actionClip4, "MainWindow.Clip4");
-    sm->registerAction(ui.actionClip5, "MainWindow.Clip5");
-    sm->registerAction(ui.actionClip6, "MainWindow.Clip6");
-    sm->registerAction(ui.actionClip7, "MainWindow.Clip7");
-    sm->registerAction(ui.actionClip8, "MainWindow.Clip8");
-    sm->registerAction(ui.actionClip9, "MainWindow.Clip9");
-    sm->registerAction(ui.actionClip10, "MainWindow.Clip10");
-    sm->registerAction(ui.actionClip11, "MainWindow.Clip11");
-    sm->registerAction(ui.actionClip12, "MainWindow.Clip12");
-    sm->registerAction(ui.actionClip13, "MainWindow.Clip13");
-    sm->registerAction(ui.actionClip14, "MainWindow.Clip14");
-    sm->registerAction(ui.actionClip15, "MainWindow.Clip15");
-    sm->registerAction(ui.actionClip16, "MainWindow.Clip16");
-    sm->registerAction(ui.actionClip17, "MainWindow.Clip17");
-    sm->registerAction(ui.actionClip18, "MainWindow.Clip18");
-    sm->registerAction(ui.actionClip19, "MainWindow.Clip19");
-    sm->registerAction(ui.actionClip20, "MainWindow.Clip20");
+    sm->registerAction(this, ui.actionClip1, "MainWindow.Clip1");
+    sm->registerAction(this, ui.actionClip2, "MainWindow.Clip2");
+    sm->registerAction(this, ui.actionClip3, "MainWindow.Clip3");
+    sm->registerAction(this, ui.actionClip4, "MainWindow.Clip4");
+    sm->registerAction(this, ui.actionClip5, "MainWindow.Clip5");
+    sm->registerAction(this, ui.actionClip6, "MainWindow.Clip6");
+    sm->registerAction(this, ui.actionClip7, "MainWindow.Clip7");
+    sm->registerAction(this, ui.actionClip8, "MainWindow.Clip8");
+    sm->registerAction(this, ui.actionClip9, "MainWindow.Clip9");
+    sm->registerAction(this, ui.actionClip10, "MainWindow.Clip10");
+    sm->registerAction(this, ui.actionClip11, "MainWindow.Clip11");
+    sm->registerAction(this, ui.actionClip12, "MainWindow.Clip12");
+    sm->registerAction(this, ui.actionClip13, "MainWindow.Clip13");
+    sm->registerAction(this, ui.actionClip14, "MainWindow.Clip14");
+    sm->registerAction(this, ui.actionClip15, "MainWindow.Clip15");
+    sm->registerAction(this, ui.actionClip16, "MainWindow.Clip16");
+    sm->registerAction(this, ui.actionClip17, "MainWindow.Clip17");
+    sm->registerAction(this, ui.actionClip18, "MainWindow.Clip18");
+    sm->registerAction(this, ui.actionClip19, "MainWindow.Clip19");
+    sm->registerAction(this, ui.actionClip20, "MainWindow.Clip20");
 
     ExtendIconSizes();
     UpdateClipsUI();
@@ -4314,10 +4351,8 @@ void MainWindow::ConnectSignalsToSlots()
     connect(ui.actionGoToLine,         SIGNAL(triggered()), this, SLOT(GoToLine()));
     // About
     connect(ui.actionUserGuide,     SIGNAL(triggered()), this, SLOT(UserGuide()));
-    connect(ui.actionFAQ,           SIGNAL(triggered()), this, SLOT(FrequentlyAskedQuestions()));
-    connect(ui.actionTutorials,     SIGNAL(triggered()), this, SLOT(Tutorials()));
     connect(ui.actionDonate,        SIGNAL(triggered()), this, SLOT(Donate()));
-    connect(ui.actionSigilDevBlog,  SIGNAL(triggered()), this, SLOT(SigilDevBlog()));
+    connect(ui.actionSigilWebsite,  SIGNAL(triggered()), this, SLOT(SigilWebsite()));
     connect(ui.actionAbout,         SIGNAL(triggered()), this, SLOT(AboutDialog()));
     // Tools
     connect(ui.actionAddCover,      SIGNAL(triggered()), this, SLOT(AddCover()));

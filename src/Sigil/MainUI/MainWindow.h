@@ -1,8 +1,8 @@
 /************************************************************************
 **
-**  Copyright (C) 2012 John Schember <john@nachtimwald.com>
+**  Copyright (C) 2012-2015 John Schember <john@nachtimwald.com>
 **  Copyright (C) 2012 Dave Heiland
-**  Copyright (C) 2009, 2010, 2011  Strahinja Markovic  <strahinja.markovic@gmail.com>
+**  Copyright (C) 2009-2011  Strahinja Markovic  <strahinja.markovic@gmail.com>
 **
 **  This file is part of Sigil.
 **
@@ -41,6 +41,7 @@
 #include "Misc/CSSInfo.h"
 #include "Misc/PasteTarget.h"
 #include "Misc/SettingsStore.h"
+#include "Misc/ValidationResult.h"
 #include "MiscEditors/ClipEditorModel.h"
 #include "MiscEditors/IndexEditorModel.h"
 #include "MiscEditors/SearchEditorModel.h"
@@ -196,6 +197,9 @@ public:
      */
     bool LoadFile(const QString &fullfilepath, bool is_internal = false);
 
+    void SetValidationResults(const QList<ValidationResult> &results);
+
+    static void clearMemoryCaches();
 
 public slots:
     void AnyCodeView();
@@ -393,19 +397,9 @@ private slots:
     void ClipEditorDialog(ClipEditorModel::clipEntry *clip_entry = NULL);
 
     /**
-     * Implements Tutorials action functionality.
-     */
-    void Tutorials();
-
-    /**
      * Implements User Guide action functionality.
      */
     void UserGuide();
-
-    /**
-     * Implements Frequently Asked Questions action functionality.
-     */
-    void FrequentlyAskedQuestions();
 
     /**
      * Implements Donate action functionality.
@@ -413,9 +407,9 @@ private slots:
     void Donate();
 
     /**
-     * Implements Sigil Dev Blog action functionality.
+     * Implements Sigil Website action functionality.
      */
-    void SigilDevBlog();
+    void SigilWebsite();
 
     /**
      * Implements About action functionality.
@@ -998,6 +992,7 @@ private:
     QMenu *m_menuPluginsInput;
     QMenu *m_menuPluginsOutput;
     QMenu *m_menuPluginsEdit;
+    QMenu *m_menuPluginsValidation;
     QAction *m_actionManagePlugins;
     bool m_SaveCSS;
 

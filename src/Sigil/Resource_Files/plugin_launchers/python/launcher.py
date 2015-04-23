@@ -26,7 +26,8 @@
 # WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from __future__ import unicode_literals, division, absolute_import, print_function
-from compatibility_utils import PY3, text_type, utf8_str, unicode_str
+
+from compatibility_utils import PY3, text_type, utf8_str, unicode_str, unescapeit
 from compatibility_utils import unicode_argv, add_cp65001_codec
 
 # Sigil Python Script Launcher
@@ -58,13 +59,9 @@ from wrapper import Wrapper
 from bookcontainer import BookContainer
 from inputcontainer import InputContainer
 from outputcontainer import OutputContainer
+from validationcontainer import ValidationContainer
 
 from xml.sax.saxutils import escape as xmlescape
-
-try:
-    from html.parser import HTMLParser
-except ImportError:
-    from HTMLParser import HTMLParser
 
 import traceback
 
@@ -72,19 +69,16 @@ add_cp65001_codec()
 
 _DEBUG=False
 
-SUPPORTED_SCRIPT_TYPES = ['input', 'output', 'edit']
+SUPPORTED_SCRIPT_TYPES = ['input', 'output', 'edit', 'validation']
 
 _XML_HEADER = '<?xml version="1.0" encoding="UTF-8"?>\n'
 
 EXTRA_ENTITIES = {'"':'&quot;', "'":"&apos;"}
-_h = HTMLParser()
 
 def escapeit(sval, EXTRAS=None):
-    global _h
     if EXTRAS:
-        return xmlescape(_h.unescape(sval), EXTRAS)
-    return xmlescape(_h.unescape(sval))
-
+        return xmlescape(unescapeit(sval), EXTRAS)
+    return xmlescape(unescapeit(sval))
 
 # Wrap a stream so that output gets saved
 # using utf-8 encoding
@@ -104,6 +98,10 @@ class SavedStream:
             data = udata.encode('utf-8')
         if self.stype == 'stdout':
             self.ps.stdouttext.append(data)
+            if PY3:
+                self.stream.buffer.write(data)
+            else:
+                self.stream.write(data)
         else:
             self.ps.stderrtext.append(data)
     def __getattr__(self, attr):
@@ -155,11 +153,10 @@ class ProcessScript(object):
         self.wrapout.append('<result>success</result>\n')
         self.wrapout.append('<changes>\n')
         if script_type == "edit":
-            for id in container._w.deleted:
-                if id in container._w.id_to_href:
-                    href = container._w.id_to_href[id]
-                    mime = container._w.id_to_mime[id]
+            for ftype, id, href in container._w.deleted:
+                if ftype == 'manifest':
                     bookhref = 'OEBPS/' + href
+                    mime = container._w.getmime(bookhref)
                 else:
                     bookhref = id
                     id = ""
@@ -187,6 +184,9 @@ class ProcessScript(object):
                     id = ""
                     mime = container._w.getmime(bookhref)
                 self.wrapout.append('<modified href="%s" id="%s" media-type="%s" />\n' % (bookhref, id, mime))
+        if script_type == 'validation':
+            for vres in container.results:
+                self.wrapout.append('<validationresult type="%s" filename="%s" linenumber="%s" message="%s" />\n' % (vres.restype, vres.filename, vres.linenumber, vres.message))
         self.wrapout.append('</changes>\n')
         self.exitcode = 0
         return
@@ -224,6 +224,8 @@ def main(argv=unicode_argv()):
     script_type = argv[3]
     target_file = argv[4]
     script_home = os.path.dirname(target_file)
+    plugin_name = os.path.split(script_home)[-1]
+    plugin_dir = os.path.dirname(script_home)
     script_module = os.path.splitext(os.path.basename(target_file))[0]
 
     # do basic sanity checking anyway
@@ -240,8 +242,7 @@ def main(argv=unicode_argv()):
         return -1
 
     # update sys with path to target module home directory
-    if script_home not in sys.path:
-        sys.path.append(script_home)
+    sys.path.append(script_home)
 
     # load and parse opf if present
     op = None
@@ -250,13 +251,15 @@ def main(argv=unicode_argv()):
         op = Opf_Parser(opf_path)
 
     # create a wrapper for record keeping and safety
-    rk = Wrapper(ebook_root, outdir, op)
+    rk = Wrapper(ebook_root, outdir, op, plugin_dir, plugin_name)
 
     # get the correct container
     if script_type == 'edit':
         bc = BookContainer(rk)
-    elif script_type == "input":
+    elif script_type == 'input':
         bc = InputContainer(rk)
+    elif script_type == 'validation':
+        bc = ValidationContainer(rk)
     else:
         bc = OutputContainer(rk)
 

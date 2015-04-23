@@ -96,9 +96,8 @@ QString PluginDB::launcherRoot()
 
 void PluginDB::load_plugins_from_disk(bool force)
 {
-    QDir         d(pluginsPath());
-    QStringList  dplugins;
-    Plugin      *plugin;
+    QDir        d(pluginsPath());
+    QStringList dplugins;
 
     if (!d.exists()) {
         return;
@@ -164,7 +163,6 @@ PluginDB::AddResult PluginDB::add_plugin_int(const QString &name, bool force)
     m_plugins.insert(plugin->get_name(), plugin);
     return PluginDB::AR_SUCCESS;
 }
-
 
 bool PluginDB::verify_plugin_zip(const QString &path, const QString &name)
 {

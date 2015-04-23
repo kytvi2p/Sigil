@@ -63,18 +63,19 @@ class QuickXHTMLParser(object):
     # its type 'begin', 'end' or 'single',
     # plus build a hashtable of its atributes
     def parsetag(self, s):
+        n = len(s)
         p = 1
         # get the tag name
         tname = None
         ttype = None
         tattr = {}
-        while s[p:p+1] == ' ' : p += 1
+        while p < n and s[p:p+1] == ' ' : p += 1
         if s[p:p+1] == '/':
             ttype = 'end'
             p += 1
-            while s[p:p+1] == ' ' : p += 1
+            while p < n and s[p:p+1] == ' ' : p += 1
         b = p
-        while s[p:p+1] not in ('>', '/', ' ', '"', "'", "\r", "\n") : p += 1
+        while p < n and s[p:p+1] not in ('>', '/', ' ', '"', "'", "\r", "\n") : p += 1
         tname=s[b:p].lower()
         if tname == '!doctype':
             tname = '!DOCTYPE'
@@ -85,22 +86,24 @@ class QuickXHTMLParser(object):
         if ttype is None:
             # parse any attributes
             while s.find('=',p) != -1 :
-                while s[p:p+1] == ' ' : p += 1
+                while p < n and s[p:p+1] == ' ' : p += 1
                 b = p
-                while s[p:p+1] != '=' : p += 1
-                aname = s[b:p].lower()
+                while p < n and s[p:p+1] != '=' : p += 1
+                # attribute names can be mixed case and are in SVG
+                aname = s[b:p]
                 aname = aname.rstrip(' ')
                 p += 1
-                while s[p:p+1] == ' ' : p += 1
+                while p < n and s[p:p+1] == ' ' : p += 1
                 if s[p:p+1] in ('"', "'") :
+                    qt = s[p:p+1]
                     p = p + 1
                     b = p
-                    while s[p:p+1] not in ('"', "'") : p += 1
+                    while p < n and s[p:p+1] != qt : p += 1
                     val = s[b:p]
                     p += 1
                 else :
                     b = p
-                    while s[p:p+1] not in ('>', '/', ' ') : p += 1
+                    while p < n and s[p:p+1] not in ('>', '/', ' ') : p += 1
                     val = s[b:p]
                 tattr[aname] = val
         # label beginning and single tags
@@ -176,9 +179,9 @@ class QuickXHTMLParser(object):
         if ttype in SPECIAL_HANDLING_TYPES and tattr is not None and 'special' in tattr:
             info = tattr['special']
             if ttype == 'comment':
-                return '<%s %s-->' % tname, info
+                return '<%s %s-->' % (tname, info)
             else:
-                return '<%s %s>' % tname, info
+                return '<%s %s>' % (tname, info)
         res = []
         res.append('<%s' % tname)
         if tattr is not None:

@@ -1,3 +1,163 @@
+sigil (0.8.6-1) experimental; urgency=medium
+
+  [ John Schember ]
+  * Update ReleaseChecklist.md
+  * Try to fix compile error with older versions of g++ that don't fully
+    support c++ 11.
+  * Add section to install docs about needing a c++11 compiler and giving some
+    examples.
+  * Auto close plugin runner when running validation plugins are successful.
+
+  [ Kevin Hendricks ]
+  * Add in support for plugin preferences by D. Massay
+
+  [ Doug Massay ]
+  * Add plugin dialog remembers last folder opened
+  * Refine last_folder support for Add Plugin dialog.
+
+  [ Kevin Hendricks ]
+  * Prevent spurious warning on Python 2.7 when updating sys.path
+  * Fix for MacOS X invocation for CSS W3C online validation
+
+  [ Doug Massay ]
+  * Tweaks for building/installing on Linux.
+  * Add ability to choose between *.rpm or *.deb package
+
+  [ John Schember ]
+  * feed back for qt5.4 changes for building.
+
+  [ Kevin Hendricks ]
+  * Force Preview to update after BookView
+  * Create clearMemoryCaches with no fontCache invalidation
+  * More properly handle loadFinished signal in BookViewPreview
+  * Fix redefined signals in subclasses warnings
+
+  [ Doug Massay ]
+  * Update Linux compilation/installation instructions.
+  * Fix typos in Linux compilation/installation instructions.
+  * More typo fixes in Linux compilation/installation instructions.
+
+  [ Kevin Hendricks ]
+  * Fix use of previously freed memory
+  * Remove unused QWebInspectors, fix PreviewWindow show/hide use after free
+  * Revert meaningless change
+  * Cleanup and remove commented out code
+  * Try to prevent memory corruption when closing MainWindow
+  * Pass parent of 0 to QMenuBar per spec for Qt on Mac OS X
+  * Remove files that shoudl have been ignored
+  * Bug fix to prevent dangling QAction pointers in KeyboardShortcutManager
+  * Minor cleanups of last change
+  * Update ChangeLog in prep for next release
+
+  [ Jan-Willem van der Veen ]
+  * Cleaned up source code.
+  * Removed references to QPushButton. Removed GenerateTocFromHeadings and
+    GenerateTocRequest. Connect collapseAction and expandAction directly to
+    m_TreeView. Removed CollapseAll and ExpandAll. Increased the
+    COLUMN_INDENTATION so the open branch indicator in Linux is no more
+    partialy hidden.
+
+  [ John Schember ]
+  * Add qt5webchannel dependency to window installation.
+  * Update translations.
+  * Update minimum OS X version to 10.10 since builds are now on 10.10.
+  * -mAllow latest release of 10.9 (10.9.5) to be used.
+  * Add qt 5.4 as a minimum qt requirnment. Add the ability to set a code sign
+    id for OS X and have addframeworks sign the application.
+  * Update docs.
+  * add more info.
+  * update docs.
+  * update docs.
+  * bump version.
+  * fix warning, update docs.
+
+  [ Kevin Hendricks ]
+  * Fix for removeall plugins bug
+
+  [ John Schember ]
+  * Documentation update.
+  * Documentation update.
+  * Documentation update.
+  * Documentation update.
+  * Documentation update.
+  * Bump version to 0.8.4.
+  * 0.8.5 changeset.
+  * Updates for 0.8.6
+
+  [ Kill Your TV ]
+  * New upstream release
+
+ -- Kill Your TV <killyourtv@i2pmail.org>  Wed, 22 Apr 2015 22:25:00 +0000
+
+sigil (0.8.2-1) unstable; urgency=medium
+
+  [ John Schember ]
+  * update release checklist.
+
+  [ Kevin Hendricks ]
+  * Make opf/html parsing more robust to improper escaping of meta contents
+  * Future proof against HTMLParser unesacpe deprecated in Python 3.4
+
+  [ John Schember ]
+  * Add validation result type and allow the validation view to load a list of
+    this type.
+  * Provide mainwindow with a public function so we can set results.
+  * Add validation type results to plugin runner.
+  * Fix type.
+  * Update ingore file not to ignore .py files because they're used for Python
+    launcher.
+  * Fully support validation plugin type.
+
+  [ Kevin Hendricks ]
+  * Make opf and xhtml parsers more robust to very poor xml
+  * Fix error in an image name inside epub
+  * Move misplaced doc epub
+  * Add Launcher Revision, improve text_iter, fix read/write/delete file
+    interface
+
+  [ Nicolas Kaiser ]
+  * fix typos in README.md
+
+  [ Kevin Hendricks ]
+  * Fix not enough arguments bug in quickparser
+  * Fix for typo in _-guide_types from Doitsu
+  * Fix for yet another guide related bug
+  * Do NOT lowercase all attribute names
+  * Add support for multiple python engines for plugin.xml
+  * Make plugin stdout immediately appear in Plugin window (set unbuffered)
+  * Set launcher version for new release
+  * Update ChangeLog.txt for coming release
+  * Find the last occurence of xml header when skipping extraneous plugin output
+  * Preparing for a new version of the Plugin Framework doc
+  * New version of Sigil Plugin Framework doc
+  * Strip redundant opf: prefix when parsing cotent.opf
+  * Disconnect ManagePlugins menu to prevent multiple connections
+  * Add full path to PluginRunner.h
+  * Fix for size_t linker issues in ValidationResult
+  * Revert back to using size_t
+  * Fix for proper plugin deletion of original files in ebook
+  * Another fix for deletefile in wrapper.py
+  * Must use resource->Delete() to physically remove the resource
+  * Consolas fontmetrics are broken on some platforms, replace with Courier New
+  * Updating to newer version of Plugin Framework epub
+  * Rev 4 of Sigil_Plugin_Framework
+
+  [ John Schember ]
+  * Update translations.
+  * Bump version
+
+  [ Kill Your TV ]
+  * New upstream release
+
+ -- Kill Your TV <killyourtv@i2pmail.org>  Sat, 29 Nov 2014 00:06:58 +0000
+
+sigil (0.8.1-1) unstable; urgency=medium
+
+  * New upstream release
+  * Bump standards version, no source changes necessary
+
+ -- Kill Your TV <killyourtv@i2pmail.org>  Sun, 12 Oct 2014 19:16:15 +0000
+
 sigil (0.8.0-1) unstable; urgency=low
 
   * Initial release

@@ -3,24 +3,33 @@ Section: doc
 Priority: optional
 Maintainer: Kill Your TV <killyourtv@i2pmail.org>
 Build-Depends: debhelper (>= 9),
- cmake,
- qtbase5-dev,
- qttools5-dev-tools,
+ cmake (>= 3.0.2),
+ qtbase5-dev (>= 5.4.1),
+ libstdc++6-4.7-dev,
+ qttools5-dev-tools (>= 5.4.1),
  libhunspell-dev,
- libqt5webkit5-dev,
- libqt5svg5-dev,
- libqt5xmlpatterns5-dev,
+ libqt5webkit5-dev (>= 5.4.1),
+ libqt5svg5-dev (>= 5.4.1),
+ libqt5opengl5-dev (>= 5.4.1),
+ libqt5sensors5-dev (>= 5.4.1),
+ libqt5webchannel5-dev (>= 5.4.1),
+ qtpositioning5-dev (>= 5.4.1),
+ qtmultimedia5-dev (>= 5.4.1),
+ libqt5xmlpatterns5-dev (>= 5.4.1),
  libminizip-dev,
- qtdeclarative5-dev,
- qttools5-dev
-Standards-Version: 3.9.5
+ python3.4,
+ libpython3.4-dev,
+ python3-lxml,
+ qtdeclarative5-dev (>= 5.4.1),
+ qttools5-dev (>= 5.4.1)
+Standards-Version: 3.9.6
 Homepage: https://github.com/user-none/Sigil
 Vcs-Git: git://killyourtv.i2p/Sigil.git
 Vcs-Browser: http://killyourtv.i2p/gitweb/?p=Sigil.git
 
 Package: sigil
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, python3-lxml, sigil-common (>= ${source:Version})
 Description: multi-platform EPUB ebook editor
  Sigil is a multi-platform EPUB editor with the following feature set:
  .
@@ -41,3 +50,32 @@ Description: multi-platform EPUB ebook editor
     FlightCrew EPUB validator
   * Embedded HTML Tidy: all imported files have their formatting corrected, and
     your editing can be optionally cleaned
+
+Package: sigil-common
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Conflicts: sigil (<< ${binary:Version})
+Replaces: sigil (<< 0.8.6)
+Description: multi-platform EPUB ebook editor -- common files
+ Sigil is a multi-platform EPUB editor with the following feature set:
+ .
+  * Online Sigil User's Guide, and Wiki documentation
+  * Full UTF-16 support
+  * Full EPUB 2 spec support
+  * Multiple Views: Book View, Code View and Preview View
+  * WYSIWYG editing in Book View
+  * Complete control over directly editing EPUB syntax in Code View
+  * Table of Contents generator with multi-level heading support
+  * Metadata editor with full support for all possible metadata entries (more
+    than 200) with full descriptions for each
+  * User interface translated into many languages
+  * Spell checking with default and user configurable dictionaries
+  * Full Regular Expression (PCRE) support for Find & Replace
+  * Supports import of EPUB and HTML files, images, and style sheets,
+  * Documents can be validated for EPUB compliance with the integrated
+    FlightCrew EPUB validator
+  * Embedded HTML Tidy: all imported files have their formatting corrected, and
+    your editing can be optionally cleaned
+ .
+ This package contains the architecture-independent files.
+
