@@ -1,3 +1,9 @@
+sigil (0.8.2-1~deb8u1) stable; urgency=medium
+
+  * Backport to Jessie
+
+ -- Kill Your TV <killyourtv@i2pmail.org>  Tue, 05 May 2015 01:38:10 +0000
+
 sigil (0.8.2-1) unstable; urgency=medium
 
   [ John Schember ]
