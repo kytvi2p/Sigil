@@ -1,3 +1,16 @@
+sigil (0.8.7-1) unstable; urgency=medium
+
+  [ John Schember ]
+  * Turn off building with optomizations for release builds on OS X because
+    the current compiler will optimize out sanity checks.
+  * Fix for crash when Sigil is built as Release on OS X with optomizations on.
+  * Update links.
+
+  [ Kill Your TV ]
+  * New upstream release
+
+ -- Kill Your TV <killyourtv@i2pmail.org>  Sun, 21 Jun 2015 01:35:58 +0000
+
 sigil (0.8.6-1) experimental; urgency=medium
 
   [ John Schember ]

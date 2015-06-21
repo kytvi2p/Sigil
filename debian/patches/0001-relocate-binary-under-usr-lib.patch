@@ -7,11 +7,9 @@ Subject: relocate binary under /usr/lib
  src/Sigil/Resource_Files/bash/sigil-sh_install | 2 +-
  2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/src/Sigil/CMakeLists.txt b/src/Sigil/CMakeLists.txt
-index 56b8bc0..e01144c 100644
 --- a/src/Sigil/CMakeLists.txt
 +++ b/src/Sigil/CMakeLists.txt
-@@ -1141,7 +1141,7 @@ if( UNIX AND NOT APPLE )
+@@ -1141,7 +1141,7 @@
  
      # Copy the application executable
      add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD 
@@ -20,7 +18,7 @@ index 56b8bc0..e01144c 100644
  
      # Copy the Unix launcher that sets the proper environment variables before launching the real Sigil binary
      add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD
-@@ -1182,7 +1182,7 @@ if( UNIX AND NOT APPLE )
+@@ -1182,7 +1182,7 @@
  
      # Standard Linux 'make install'
      install( PROGRAMS ${LINUX_LAUNCH_INSTALL_SCRIPT_CONFIGURED} DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/ RENAME ${PROJECT_NAME} )
@@ -29,11 +27,9 @@ index 56b8bc0..e01144c 100644
      install( FILES ${LINUX_DESKTOP_FILE} DESTINATION ${CMAKE_INSTALL_PREFIX}/share/applications/ )
      install( FILES ${LINUX_DESKTOP_ICON_FILE} DESTINATION ${CMAKE_INSTALL_PREFIX}/share/pixmaps RENAME sigil.png )
      install( FILES ${QM_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/share/sigil/translations/ )
-diff --git a/src/Sigil/Resource_Files/bash/sigil-sh_install b/src/Sigil/Resource_Files/bash/sigil-sh_install
-index 00fa431..4b5fa92 100755
 --- a/src/Sigil/Resource_Files/bash/sigil-sh_install
 +++ b/src/Sigil/Resource_Files/bash/sigil-sh_install
-@@ -21,5 +21,5 @@ fi
+@@ -21,5 +21,5 @@
  export LD_LIBRARY_PATH
  #export QT_DEBUG_PLUGINS=1 
  
